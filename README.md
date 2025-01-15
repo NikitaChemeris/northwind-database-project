@@ -191,3 +191,141 @@ DROP TABLE IF EXISTS categories_staging;
 ```
 
 This completed the ETL process, resulting in a dimensional model ready for analysis.
+
+## **4. Data Visualization**
+
+To provide actionable insights, six visualizations were created:
+
+| <img src="visualisations_dashboard.png"/> |
+|:-:|
+|*Figure 3: Dashboard NorthWind*|
+
+### **Visualization 1: Revenue dynamics by product category**
+
+This chart illustrates how revenue evolves across different product categories over time. It highlights which categories contribute most significantly to the total revenue, enabling insights into the performance of product groups and helping businesses focus on high-revenue categories. 
+
+**This visualization answers the question: "Which product categories generate the most revenue, and how does this change over the years?"**
+
+
+
+| <img src="Visualisations/Revenue-dynamics_by_product_category.png"/> |
+|:-:|
+|*Figure 4: Revenue dynamics by product category*|
+
+```sql
+SELECT 
+    t.year,
+    c.category_name,
+    SUM(f.total_revenue) AS total_revenue
+FROM sales_fact f
+JOIN dim_time t ON f.order_date = t.order_date
+JOIN dim_product p ON f.product_id = p.product_id
+JOIN dim_category c ON p.category_id = c.category_id
+GROUP BY t.year, c.category_name
+ORDER BY t.year, total_revenue DESC;
+```
+
+### **Visualization 2: Sales by customer country**
+
+This bar chart displays the distribution of sales revenue by customer country, helping identify top-performing regions. It allows businesses to evaluate geographic market opportunities and assess the impact of customer locations on revenue generation.
+
+**This visualization answers the question: "Which countries contribute most to the company's revenue?"**
+
+| <img src="Visualisations/Sales_by_customer_country.png"/> |
+|:-:|
+|*Figure 5: Sales by customer country*|
+
+```sql
+SELECT 
+    c.country AS customer_country,
+    SUM(f.total_revenue) AS total_revenue
+FROM sales_fact f
+JOIN dim_customer c ON f.customer_id = c.customer_id
+GROUP BY c.country
+ORDER BY total_revenue DESC;
+
+```
+
+### **Visualization 3: The most popular products by number of sales**
+
+This visualization ranks products based on the total number of units sold. It identifies the most in-demand items, enabling businesses to prioritize inventory management and marketing efforts.
+
+**This visualization answers the question: "Which products are the most popular among customers based on sales volume?"**
+
+| <img src="Visualisations/The_most_popular_products.png"/> |
+|:-:|
+|*Figure 6: Most popular products by number of sales*|
+
+```sql
+SELECT 
+    p.product_name, 
+    SUM(f.quantity) AS total_quantity_sold
+FROM sales_fact f
+JOIN dim_product p ON f.product_id = p.product_id
+GROUP BY p.product_name
+ORDER BY total_quantity_sold DESC
+LIMIT 10;
+```
+
+### **Visualization 4: Revenue by supplier**
+
+This scatter plot examines the revenue contribution of each supplier, helping businesses evaluate supplier performance and dependency. It also supports decision-making on diversifying or strengthening supplier relationships.
+
+**This visualization answers the question: "Which suppliers generate the most revenue for the company?"**
+
+| <img src="Visualisations/Revenue_by_supplier.png"/> |
+|:-:|
+|*Figure 7: Revenue by supplier*|
+
+```sql
+SELECT 
+    s.supplier_name,
+    SUM(f.total_revenue) AS total_revenue
+FROM sales_fact f
+JOIN dim_product p ON f.product_id = p.product_id
+JOIN dim_supplier s ON p.supplier_id = s.supplier_id
+GROUP BY s.supplier_name
+ORDER BY total_revenue DESC;
+```
+
+### **Visualization 5: Monthly Order Activity Analysis**
+
+This line chart tracks monthly order activity, highlighting seasonal trends and periods of peak demand. By analyzing monthly patterns, businesses can optimize marketing and operational strategies.
+
+**This visualization answers the question: "How does order activity vary throughout the months of the year?"**
+
+| <img src="Visualisations/Monthly_Order_Activity_Analysis.png"/> |
+|:-:|
+|*Figure 8: Monthly Order Activity Analysis*|
+
+```sql
+SELECT 
+    TO_CHAR(order_date, 'Month') AS month_name,
+    EXTRACT(MONTH FROM order_date) AS month_number,
+    SUM(total_revenue) AS total_sales
+FROM sales_fact
+GROUP BY 
+    TO_CHAR(order_date, 'Month'),
+    EXTRACT(MONTH FROM order_date)
+ORDER BY month_number;
+```
+
+### **Visualization 6: Average price of products by category**
+
+This bar chart showcases the average price of products across different categories. It provides insights into pricing strategies and helps businesses assess whether certain categories have premium pricing or are underpriced.
+
+**This visualization answers the question: "What is the average price of products in each category, and how do they compare?"**
+
+| <img src="Visualisations/Average_price_of_products_by_category.png"/> |
+|:-:|
+|*Figure 9: Average price of products by category*|
+
+```sql
+SELECT 
+    c.category_name, 
+    AVG(p.price) AS average_price
+FROM dim_product p
+JOIN dim_category c ON p.category_id = c.category_id
+GROUP BY c.category_name
+ORDER BY average_price DESC;
+```
