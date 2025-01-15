@@ -173,3 +173,9 @@ FROM order_details_staging od
     JOIN products_staging p ON od.productId = p.id;
     
 SELECT * FROM sales_fact;
+
+DROP TABLE IF EXISTS customers_staging;
+DROP TABLE IF EXISTS products_staging;
+DROP TABLE IF EXISTS orders_staging;
+DROP TABLE IF EXISTS order_details_staging;
+DROP TABLE IF EXISTS categories_staging;
